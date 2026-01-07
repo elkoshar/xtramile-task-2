@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/patients")
-@CrossOrigin(origins = "http://localhost:4200") // Allow Angular app
+@CrossOrigin(origins = "http://localhost:4200")
 public class PatientController {
 
     @Autowired

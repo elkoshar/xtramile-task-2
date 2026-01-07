@@ -19,10 +19,12 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PatientControllerTest {
+public class PatientControllerTest {
 
     @Mock
     private PatientService patientService;
@@ -65,4 +67,55 @@ class PatientControllerTest {
 
         assertEquals(1L, result.getId());
     }
+
+
+    @Test
+    void updatePatient_Success() {
+        Long patientId = 1L;
+        Patient patientDetails = new Patient(null, "Jane", "Smith", LocalDate.of(1985, 5, 15), "Female", "0987654321", "456 Ave", "City", "NSW", "5678");
+        Patient updatedPatient = new Patient(patientId, "Jane", "Smith", LocalDate.of(1985, 5, 15), "Female", "0987654321", "456 Ave", "City", "NSW", "5678");
+
+        when(patientService.updatePatient(patientId, patientDetails)).thenReturn(updatedPatient);
+
+        ResponseEntity<Patient> response = patientController.updatePatient(patientId, patientDetails);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Jane", response.getBody().getFirstName());
+        assertEquals("Smith", response.getBody().getLastName());
+    }
+
+    @Test
+    void updatePatient_NotFound() {
+        Long patientId = 999L;
+        Patient patientDetails = new Patient(null, "Jane", "Smith", LocalDate.of(1985, 5, 15), "Female", "0987654321", "456 Ave", "City", "NSW", "5678");
+
+        when(patientService.updatePatient(patientId, patientDetails)).thenThrow(new RuntimeException("Patient not found"));
+
+        ResponseEntity<Patient> response = patientController.updatePatient(patientId, patientDetails);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    void deletePatient_Success() {
+        Long patientId = 1L;
+
+        doNothing().when(patientService).deletePatient(patientId);
+
+        ResponseEntity<Void> response = patientController.deletePatient(patientId);
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    }
+
+    @Test
+    void deletePatient_NotFound() {
+        Long patientId = 999L;
+
+        doThrow(new RuntimeException("Patient not found")).when(patientService).deletePatient(patientId);
+
+        ResponseEntity<Void> response = patientController.deletePatient(patientId);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
 }
